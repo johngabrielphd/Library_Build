@@ -137,4 +137,5 @@
 	CREATE INDEX borrowers_lastname_idx
 		ON borrowers(lastname);
 		
+		
 	
