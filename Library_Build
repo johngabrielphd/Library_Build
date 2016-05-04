@@ -1,0 +1,140 @@
+
+	DROP TABLE Holdings CASCADE CONSTRAINTS;
+	DROP TABLE Titles CASCADE CONSTRAINTS;
+	DROP TABLE Categories CASCADE CONSTRAINTS;
+	DROP TABLE Publishers CASCADE CONSTRAINTS;
+	DROP TABLE TitleAuthor CASCADE CONSTRAINTS;
+	DROP TABLE Authors CASCADE CONSTRAINTS;
+	DROP TABLE Location CASCADE CONSTRAINTS;
+	DROP TABLE Borrowers CASCADE CONSTRAINTS;
+	DROP TABLE CurrentLoans CASCADE CONSTRAINTS;
+	DROP TABLE PastLoans CASCADE CONSTRAINTS;
+	DROP TABLE Requests CASCADE CONSTRAINTS;
+	DROP TABLE Overdue CASCADE CONSTRAINTS;
+
+	CREATE TABLE Categories (
+		Category VARCHAR2(15),
+		Description VARCHAR2(255),
+			CONSTRAINT categories_category_pk PRIMARY KEY (category));
+			
+	CREATE TABLE Publishers (
+		PubID VARCHAR2(12),
+		Publisher VARCHAR2(50),
+		Address VARCHAR2(50),
+		City VARCHAR2(25),
+		State VARCHAR2(2),
+		ZIP VARCHAR2(5),
+		Contact VARCHAR2(50),
+		Email VARCHAR2(50),
+		Phone VARCHAR2(15),
+		Fax VARCHAR2(15),
+			CONSTRAINT publishers_pubid_pk PRIMARY KEY (pubid));
+			
+	CREATE TABLE Authors (
+		AuthorID VARCHAR2(12),
+		LastName VARCHAR2(25),
+		FirstName VARCHAR2(25),
+			CONSTRAINT authors_authorid_pk PRIMARY KEY (authorid));
+	
+	CREATE TABLE Location (
+		LocationID VARCHAR2(15),
+		MinCall# VARCHAR2(12),
+		MaxCall# VARCHAR2(12),
+			CONSTRAINT location_locationid_pk PRIMARY KEY (locationid));
+				
+	CREATE TABLE Titles (
+		TitleID VARCHAR2(13),
+		Title VARCHAR2(50),
+		Volume VARCHAR2(5),
+		PubDate DATE,
+		PubID VARCHAR2(12),
+		ReplacementCost NUMBER(6,2),
+		Synopsis VARCHAR2(255),
+		Category VARCHAR2(15),
+			CONSTRAINT titles_titleid_pk PRIMARY KEY (titleid),
+			CONSTRAINT titles_pubid_fk FOREIGN KEY (pubid)
+				REFERENCES publishers(pubid),
+			CONSTRAINT titles_category_fk FOREIGN KEY (category)
+				REFERENCES categories(category));
+	
+	CREATE TABLE Holdings (
+		Call# VARCHAR2(12), 
+		TitleID VARCHAR2(13),
+		Reserved NUMBER(1),
+			CONSTRAINT holdings_call#_pk PRIMARY KEY (call#),
+			CONSTRAINT holdings_titleid_fk FOREIGN KEY (titleid)
+				REFERENCES titles(titleid));
+			
+	CREATE TABLE TitleAuthor (
+		TitleID VARCHAR2(13),
+		AuthorID VARCHAR2(12),
+			CONSTRAINT titleauthor_pk PRIMARY KEY (titleid, authorid),
+			CONSTRAINT titleauthor_titleid_fk FOREIGN KEY (titleid)
+				REFERENCES titles(titleid),
+			CONSTRAINT titleauthor_authorid_fk FOREIGN KEY (authorid)
+				REFERENCES authors(authorid));
+	
+	CREATE TABLE Borrowers (
+		LibraryCard# VARCHAR2(15),
+		LastName VARCHAR2(25),
+		FirstName VARCHAR2(25),
+		Address VARCHAR2(50),
+		City VARCHAR2(25),
+		State VARCHAR2(2),
+		ZIP VARCHAR2(5),
+		Email VARCHAR2(50),
+		Phone VARCHAR2(15),
+			CONSTRAINT borrowers_librarycard#_pk PRIMARY KEY (librarycard#));
+	
+	CREATE TABLE CurrentLoans (
+		LibraryCard# VARCHAR2(15),
+		Call# VARCHAR2(12), 
+		DueDate DATE,
+		TimesRenewed NUMBER(2),
+			CONSTRAINT currentloans_pk PRIMARY KEY (librarycard#, call#),
+			CONSTRAINT currentloans_librarycard#_fk FOREIGN KEY (librarycard#)
+				REFERENCES borrowers(librarycard#),
+			CONSTRAINT currentloans_call#_fk FOREIGN KEY (call#)
+				REFERENCES holdings(call#));
+	
+	CREATE TABLE PastLoans (
+		LibraryCard# VARCHAR2(15),
+		Call# VARCHAR2(12), 
+		ReturnDate DATE,
+		Fine NUMBER(6,2),
+		Paid NUMBER(1),
+			CONSTRAINT pastloans_pk PRIMARY KEY (librarycard#, call#, returndate),
+			CONSTRAINT pastloans_librarycard#_fk FOREIGN KEY (librarycard#)
+				REFERENCES borrowers(librarycard#),
+			CONSTRAINT pastloans_call#_fk FOREIGN KEY (call#)
+				REFERENCES holdings(call#));
+	
+	CREATE TABLE Requests (
+		LibraryCard# VARCHAR2(15),
+		Call# VARCHAR2(12), 
+		ReqDate DATE,
+			CONSTRAINT requests_pk PRIMARY KEY (librarycard#, call#, reqdate),
+			CONSTRAINT requests_librarycard#_fk FOREIGN KEY (librarycard#)
+				REFERENCES borrowers(librarycard#),
+			CONSTRAINT requests_call#_fk FOREIGN KEY (call#)
+				REFERENCES holdings(call#));
+	
+	CREATE TABLE Overdue (
+		Fine VARCHAR2(50),
+		MinOverdue NUMBER(3),
+		MaxOverdue NUMBER(3),
+			CONSTRAINT overdue_fine_pk PRIMARY KEY (fine));
+			
+	CREATE INDEX titles_title_idx 
+		ON titles(title);
+	
+	CREATE BITMAP INDEX titles_category_idx
+		ON titles(category);
+		
+	CREATE INDEX authors_lastname_idx
+		ON authors(lastname);
+
+	CREATE INDEX borrowers_lastname_idx
+		ON borrowers(lastname);
+		
+	
